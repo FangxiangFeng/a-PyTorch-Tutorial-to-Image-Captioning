@@ -3,11 +3,16 @@ import numpy as np
 import h5py
 import json
 import torch
-from scipy.misc import imread, imresize
+import PIL
+from PIL import Image
+from imageio import imread
 from tqdm import tqdm
 from collections import Counter
 from random import seed, choice, sample
 
+def imresize(old_image, new_size):
+    im = Image.fromarray(old_image)
+    return np.array(im.resize(new_size, PIL.Image.BICUBIC))
 
 def create_input_files(dataset, karpathy_json_path, image_folder, captions_per_image, min_word_freq, output_folder,
                        max_len=100):
@@ -23,7 +28,7 @@ def create_input_files(dataset, karpathy_json_path, image_folder, captions_per_i
     :param max_len: don't sample captions longer than this length
     """
 
-    assert dataset in {'coco', 'flickr8k', 'flickr30k'}
+    assert dataset in {'aicc', 'coco', 'flickr8k', 'flickr30k'}
 
     # Read Karpathy JSON
     with open(karpathy_json_path, 'r') as j:
@@ -49,7 +54,7 @@ def create_input_files(dataset, karpathy_json_path, image_folder, captions_per_i
         if len(captions) == 0:
             continue
 
-        path = os.path.join(image_folder, img['filepath'], img['filename']) if dataset == 'coco' else os.path.join(
+        path = os.path.join(image_folder, img['filepath'], img['filename']) if dataset in ['coco', 'aicc'] else os.path.join(
             image_folder, img['filename'])
 
         if img['split'] in {'train', 'restval'}:
